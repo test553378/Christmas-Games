@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f5f1e6">
+  <meta name="description" content="サンタさんと、クリスマスのよるへ。すずをならして子どもをおこし、プレゼントをとどける、やさしい2Dゲーム。">
+  <title>サンタさんのプレゼント大作戦</title>
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <svg class="icon-definitions" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
+    <symbol id="i-bell" viewBox="0 0 32 32"><path d="M9 22c2-3 1-7 3-10a5 5 0 0 1 8 0c2 3 1 7 3 10H9Z" fill="currentColor"/><path d="M7 24h18M16 6V4m-2 24h4M5 10l-2-2m24 2 2-2" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></symbol>
+    <symbol id="i-gift" viewBox="0 0 32 32"><path d="M5 14h22v14H5zM3 10h26v6H3z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><path d="M16 10v18M16 10C5 10 7 1 12 4c3 1 4 6 4 6Zm0 0c11 0 9-9 4-6-3 1-4 6-4 6Z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></symbol>
+    <symbol id="i-sound" viewBox="0 0 32 32"><path d="m5 12 6 0 7-6v20l-7-6H5z" fill="currentColor"/><path d="M23 10q6 6 0 12M26 6q10 10 0 20" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"/></symbol>
+    <symbol id="i-mute" viewBox="0 0 32 32"><path d="m5 12 6 0 7-6v20l-7-6H5z" fill="currentColor"/><path d="m23 12 7 8m0-8-7 8" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></symbol>
+    <symbol id="i-book" viewBox="0 0 32 32"><path d="M16 8C11 4 6 5 3 6v20c5-2 9-1 13 2 4-3 8-4 13-2V6c-3-1-8-2-13 2Zm0 0v20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><path d="M7 11h5m-5 5h5m8-5h5m-5 5h5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 32 32"><path d="M5 16h21m-8-8 8 8-8 8" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-star" viewBox="0 0 32 32"><path d="m16 3 4 8 9 1-7 7 2 10-8-5-8 5 2-10-7-7 9-1z" fill="currentColor"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 32 32"><circle cx="16" cy="17" r="11" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M16 10v8l5 3M12 2h8m-4 0v4" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></symbol>
+    <symbol id="i-pause" viewBox="0 0 32 32"><rect x="8" y="6" width="5" height="20" rx="2" fill="currentColor"/><rect x="19" y="6" width="5" height="20" rx="2" fill="currentColor"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 32 32"><path d="M23 23A12 12 0 0 1 12 3a13 13 0 1 0 17 17 12 12 0 0 1-6 3Z" fill="currentColor"/></symbol>
+    <symbol id="i-bed" viewBox="0 0 32 32"><path d="M3 10v18m26-16v16M3 22h26M3 16h26v6H3zM7 10h8v6H7z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-retry" viewBox="0 0 32 32"><path d="M7 9A12 12 0 1 1 5 21M7 3v8h8" fill="none" stroke="currentColor" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  </defs></svg>
+  <main class="app">
+    <header class="masthead">
+      <a class="brand" href="./" aria-label="タイトルへもどる">
+        <span class="brand-mark"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="m20 6-10 14h5L7 31h26l-8-11h5z" fill="#4d7d66"/><path d="M18 30h4v6h-4z" fill="#b98b59"/><path d="m20 1 1.7 3.5 3.8.5-2.8 2.7.7 3.8L20 9.7l-3.4 1.8.7-3.8L14.5 5l3.8-.5z" fill="#ddb366"/><circle cx="16" cy="22" r="2" fill="#ecbb75"/><circle cx="24" cy="28" r="2" fill="#d88473"/></svg></span>
+        <span>クリスマスの よる<span class="brand-sub">A LITTLE CHRISTMAS ADVENTURE</span></span>
+      </a>
+      <nav class="utilities" aria-label="ゲームのせってい">
+        <button id="pause-button" class="utility icon-only" aria-label="いったんおやすみ" hidden><svg class="icon"><use href="#i-pause"/></svg></button>
+        <button id="sound-button" class="utility" aria-label="おとをけす" aria-pressed="true"><svg class="icon"><use href="#i-sound"/></svg><span>おと ON</span></button>
+        <button id="help-button" class="utility"><svg class="icon"><use href="#i-book"/></svg><span>あそびかた</span></button>
+      </nav>
+    </header>
+
+    <section class="game-shell" aria-label="サンタさんのプレゼント大作戦">
+      <div class="hud">
+        <div id="stage-display" class="stage-display"><span class="eyebrow">CHRISTMAS EVE</span><span class="stage-name">とくべつな よるの はじまり</span></div>
+        <div id="child-status" class="child-status" aria-label="こどもたちのようす"></div>
+        <div id="timer" class="timer" hidden>
+          <svg class="icon"><use href="#i-clock"/></svg>
+          <div><div class="timer-number"><span id="time-label">のこり</span> <strong id="time-number">30</strong><small id="time-unit">びょう</small></div><div class="time-track" role="progressbar" aria-label="のこりじかん" aria-valuemin="0" aria-valuemax="30" aria-valuenow="30"><span id="time-fill"></span></div></div>
+        </div>
+        <div id="title-stars" class="title-stars" aria-hidden="true">✦ <span>12.24</span> ✦</div>
+      </div>
+
+      <div class="scene" id="scene">
+        <canvas id="game-canvas" width="960" height="540" tabindex="0" aria-label="こどもべや。ゆかやベッドをタップすると、サンタさんがあるくよ。">Canvasに対応したブラウザであそんでね。</canvas>
+        <div id="bed-targets" class="bed-targets"></div>
+        <div id="title-screen" class="title-screen">
+          <span class="story-label"><span></span> こんやは、クリスマス。</span>
+          <h1>サンタさんの<br><em>プレゼント大作戦</em></h1>
+          <p>ちりん、ちりん。おはよう！<br>すずをならして、プレゼントをとどけよう。</p>
+          <button id="start-button" class="primary start-button">あそぶ <svg class="icon"><use href="#i-arrow"/></svg></button>
+          <span class="title-note">ぜんぶで ２ステージ ・ ４〜６さいから</span>
+        </div>
+        <div id="intro" class="intro" hidden><span id="intro-text">ステージ １</span><strong>サンタさんが きたよ！</strong></div>
+        <div id="result-screen" class="result-screen" hidden>
+          <div class="result-card">
+            <div id="result-art" class="result-art"></div>
+            <span id="result-kicker" class="eyebrow">WONDERFUL!</span>
+            <h2 id="result-title"></h2><p id="result-message"></p>
+            <button id="result-button" class="primary"></button>
+            <button id="result-home" class="text-button">はじめに もどる</button>
+          </div>
+        </div>
+        <div id="scene-caption" class="scene-caption" aria-hidden="true"><span>✦</span> みんなに、すてきなクリスマスを。</div>
+      </div>
+
+      <div id="title-footer" class="title-footer">
+        <span><i>1</i><svg class="icon"><use href="#i-bed"/></svg> ベッドをタップ</span><b>· · ·</b>
+        <span><i>2</i><svg class="icon"><use href="#i-bell"/></svg> すずを３かい</span><b>· · ·</b>
+        <span><i>3</i><svg class="icon"><use href="#i-gift"/></svg> プレゼント！</span>
+      </div>
+      <div id="play-controls" class="play-controls" hidden>
+        <div id="guide" class="guide" role="status" aria-live="polite"><span class="guide-spark">✦</span><span id="guide-text">ベッドに ちかづこう！</span></div>
+        <div class="action-row">
+          <button id="bell-button" class="action bell-action"><svg class="icon"><use href="#i-bell"/></svg><span>すずをならす<small>ちりん、ちりん♪</small></span><span id="bell-count" class="action-count">３かい</span></button>
+          <button id="gift-button" class="action gift-action" disabled><svg class="icon"><use href="#i-gift"/></svg><span>プレゼントをわたす<small id="gift-hint">おきたら わたせるよ</small></span><svg class="icon action-arrow"><use href="#i-arrow"/></svg></button>
+        </div>
+      </div>
+    </section>
+    <footer class="page-footer"><span>おやこで、のんびり。すてきな よるを。</span><span>MADE WITH CHRISTMAS MAGIC <span class="footer-star">✧</span></span></footer>
+  </main>
+
+  <dialog id="help-dialog" aria-labelledby="help-title">
+    <div class="dialog-content"><span class="eyebrow">HOW TO PLAY</span><h2 id="help-title">サンタさんの おてつだい</h2>
+      <ol class="help-steps">
+        <li><svg class="icon"><use href="#i-bed"/></svg><div><strong>ベッドを タップ！</strong><p>サンタさんが こどもの そばに あるくよ。<br>ゆかを タップしても うごけるよ。</p></div></li>
+        <li><svg class="icon"><use href="#i-bell"/></svg><div><strong>ちかくで すずを ３かい</strong><p>ちりん♪ の あとは、すこし まってね。<br>おほしさまが ３つで おきるよ。</p></div></li>
+        <li><svg class="icon"><use href="#i-gift"/></svg><div><strong>プレゼントを わたそう！</strong><p>おきた こどもの そばで ボタンを おしてね。<br>みんなに わたせたら クリア！</p></div></li>
+      </ol>
+      <p class="help-tip">みんなが おきたら、とけいは とまるよ。</p>
+      <p class="keyboard-note">パソコン：← → で いどう ／ スペースで すず ／ G で プレゼント</p>
+      <button id="help-close" class="primary">わかった！<svg class="icon"><use href="#i-star"/></svg></button>
+    </div>
+  </dialog>
+  <dialog id="pause-dialog" aria-labelledby="pause-title"><div class="dialog-content pause-content"><svg class="icon big-moon"><use href="#i-moon"/></svg><h2 id="pause-title">ちょっと ひとやすみ</h2><p>じかんは とまっているよ。</p><button id="resume-button" class="primary">つづける<svg class="icon"><use href="#i-arrow"/></svg></button><button id="pause-home" class="text-button">はじめに もどる</button></div></dialog>
+  <noscript><p class="noscript">あそぶには、ブラウザのJavaScriptをオンにしてね。</p></noscript>
+  <script type="module" src="./src/main.mjs"></script>
+</body>
+</html>
