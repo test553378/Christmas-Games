@@ -52,7 +52,7 @@ test('stage 2 independently preserves waking and gift state; one child is insuff
   const g=ready(2);wake(g,'girl');assert.equal(g.timerRunning,true);assert.equal(g.children[1].rings,0);deliver(g,'girl');assert.equal(g.state,STATE.STAGE2_PLAYING);assert.equal(g.timerRunning,true);g.tick(45);assert.equal(g.state,STATE.GAME_OVER);
 });
 test('stage 2 supports either wake order and clears after both presents',()=>{
-  for(const order of [['girl','boy'],['boy','girl']]){const g=ready(2);wake(g,order[0]);deliver(g,order[0]);g.tick(.8);wake(g,order[1]);const left=g.remaining;g.tick(90);assert.equal(g.remaining,left);assert.equal(g.timerRunning,false);deliver(g,order[1]);assert.equal(g.state,STATE.ALL_CLEAR);assert.equal(g.children.every(c=>c.giftReceived),true);}
+  for(const order of [['girl','boy'],['boy','girl']]){const g=ready(2);wake(g,order[0]);deliver(g,order[0]);g.tick(.8);wake(g,order[1]);const left=g.remaining;g.tick(90);assert.equal(g.remaining,left);assert.equal(g.timerRunning,false);deliver(g,order[1]);assert.equal(g.state,STATE.STAGE2_CLEAR);assert.equal(g.children.every(c=>c.giftReceived),true);}
 });
 test('stage 2 with one awake child fails at 45 seconds',()=>{const g=ready(2);wake(g,'girl');g.tick(g.remaining);assert.equal(g.state,STATE.GAME_OVER);});
 test('a present cannot complete a stage when another child is asleep at timeout',()=>{const g=ready(2);wake(g,'girl');g.tick(g.remaining-.2);g.giveGift();g.tick(.9);assert.equal(g.state,STATE.GAME_OVER);assert.equal(g.giftFlight,null);});

@@ -1,4 +1,4 @@
-import { CONFIG, STATE } from './config.mjs';
+import { CONFIG, STATE, MOM } from './config.mjs';
 
 const C = { ink: '#493e38', green: '#28675c', red: '#cc554c', cream: '#fff6dc', gold: '#f2bc5c', wood: '#bb8055' };
 const TAU = Math.PI * 2;
@@ -89,16 +89,17 @@ export class Renderer {
     oval(c, 517, 420, 251, 62, '#b5be9a'); oval(c, 517, 420, 238, 53, '#d7dcc0');
     c.beginPath(); c.ellipse(517, 420, 227, 47, 0, 0, TAU); c.strokeStyle = '#abb794'; c.lineWidth = 2; c.setLineDash([4, 6]); c.stroke(); c.setLineDash([]);
     for (let i = 0; i < 16; i++) { const a = i * TAU / 16; oval(c, 517 + Math.cos(a) * 248, 420 + Math.sin(a) * 61, 3, 2, '#f0e5c5'); }
-    this.window(c, stage === 1 ? 492 : 525);
+    this.window(c, stage === 1 ? 492 : stage === 3 ? 640 : 525);
     this.garland(c);
-    this.tree(c, stage === 1 ? 291 : 524, stage === 1 ? 338 : 348, stage === 1 ? 1 : 0.82);
+    this.tree(c, stage === 1 ? 291 : stage === 3 ? 76 : 524, stage === 1 ? 338 : stage === 3 ? 321 : 348, stage === 1 ? 1 : stage === 3 ? .63 : .82);
     if (stage === 1) {
       this.cabinet(c, 72, 244); this.nightstand(c, 873, 286);
       rr(c, 665, 81, 82, 65, 4, '#ac7956'); rr(c, 672, 88, 68, 51, 2, '#fff0cf');
       oval(c, 706, 112, 17, 17, '#d2d9ba'); star(c, 706, 110, 12, '#dcad55');
       line(c, [[109, 117], [109, 155]], '#ad8055', 2); rr(c, 75, 151, 68, 45, 4, '#a87753');
       rr(c, 80, 156, 58, 35, 2, '#d1d5b2'); label(c, 'NOEL', 109, 174, 15, '#6d7e60');
-    } else { this.nightstand(c, 890, 287); this.cabinet(c, 77, 252); }
+    } else if (stage === 2) { this.nightstand(c, 890, 287); this.cabinet(c, 77, 252); }
+    else { this.nightstand(c, 935, 277); label(c, 'FAMILY CHRISTMAS', 335, 103, 14, '#a48c62'); star(c,335,73,12,'#ddbc75'); }
     const glow = c.createRadialGradient(470, 90, 30, 470, 90, 540); glow.addColorStop(0, '#fff9d817'); glow.addColorStop(1, '#fff9d800'); c.fillStyle = glow; c.fillRect(0, 0, 960, 540);
   }
 
@@ -175,10 +176,14 @@ export class Renderer {
     line(c,[[x,81],[x,233]],'#cfb48b',7);line(c,[[x-76,158],[x+76,158]],'#cfb48b',6);
   }
 
-  bed(c, child, time, elapsed) {
-    const x=child.x, girl=child.gender==='girl', awake=child.rings>=3, happy=child.giftReceived;
-    const blanket=girl?'#d88b8e':'#7da7b4', dark=girl?'#bf737a':'#638d9d';
-    c.save();c.translate(x,0);
+  bed(c, child, time, elapsed, game) {
+    const x=child.x, girl=child.gender==='girl', mom=child.role==='mom', returning=child.state===MOM.GOING_BACK_TO_SLEEP;
+    const awake=mom?[MOM.ASKING_TIME,MOM.AWAKE,MOM.GIFT_RECEIVED].includes(child.state):child.rings>=CONFIG.ringsToWake, happy=child.giftReceived;
+    const reaction=mom?game?.momReaction:null;
+    const surprised=awake&&reaction?.success&&elapsed-reaction.at<1;
+    const wakeStep=mom?(child.rings<3?0:child.rings<5?1:2):child.rings;
+    const blanket=mom?'#ada2bf':girl?'#d88b8e':'#7da7b4', dark=mom?'#9185a8':girl?'#bf737a':'#638d9d';
+    c.save();c.translate(x,0);if(mom)c.scale(child.bedScale??1.14,1);
     oval(c,0,372,100,16,'#775d3c22');
     rr(c,-84,204,168,129,25,'#b8875f');rr(c,-77,212,154,109,20,'#dfb48a');
     for(let i=0;i<5;i++)rr(c,-58+i*29,228,9,64,5,'#cd9e76');
@@ -186,14 +191,16 @@ export class Renderer {
     rr(c,-90,275,180,65,13,'#f9e6c9');rr(c,-76,244,152,41,13,'#fff5df');
     line(c,[[-63,251],[56,251]],'#e9d9bc',2);
     const breath=this.reduced?0:Math.sin(time*2)*1.4;
-    const rise=awake?Math.min(1,Math.max(0,(elapsed-child.lastRingAt)/.45)):0;
+    const rise=awake?(mom?(this.reduced||this.momQuestionStart==null?1:Math.min(1,Math.max(0,(time-this.momQuestionStart)/.45))):Math.min(1,Math.max(0,(elapsed-child.lastRingAt)/.45))):0;
     let cy=awake?260-29*(1-(1-rise)**3):260+breath;
+    if(returning)cy=231+29*(1-(game?.momSleepRemaining??0)/CONFIG.momSleepDuration);
     if(happy&&!this.reduced)cy-=Math.max(0,Math.sin(time*6))*4;
-    c.save();c.translate(awake?0:-13,cy);
-    if(!awake&&child.rings===1)c.rotate(Math.sin(time*3)*.045-.09);
-    if(awake) { rr(c,-24,22,48,44,15,girl?'#eed5c8':'#b4c7c2'); for(let i=0;i<3;i++)oval(c,0,29+i*10,1.8,1.8,'#b09f94'); }
+    c.save();c.translate(awake||returning?0:-13,cy);
+    if(!awake&&!returning&&wakeStep===1)c.rotate(Math.sin(time*3)*.045-.09);
+    if(awake||returning) { rr(c,-24,22,48,44,15,mom?'#e0d6e1':girl?'#eed5c8':'#b4c7c2'); for(let i=0;i<3;i++)oval(c,0,29+i*10,1.8,1.8,'#b09f94'); }
     // Rounded, hand-drawn hair and face.
     oval(c,0,0,29,30,girl?'#72503c':'#765740');
+    if(mom){oval(c,-24,15,10,24,'#684b3c');oval(c,24,15,10,24,'#684b3c');oval(c,18,-24,13,12,'#684b3c');}
     if(girl){oval(c,-28,10,10,16,'#72503c');oval(c,28,10,10,16,'#72503c');}
     oval(c,0,5,24,25,'#f4c9a8');oval(c,-24,5,4,6,'#f4c9a8');oval(c,24,5,4,6,'#f4c9a8');
     c.beginPath();c.moveTo(-25,-5);c.quadraticCurveTo(-18,-30,8,-22);c.quadraticCurveTo(32,-18,25,2);c.quadraticCurveTo(9,-1,4,-13);c.quadraticCurveTo(-7,-2,-25,-5);c.fillStyle=girl?'#72503c':'#765740';c.fill();
@@ -201,34 +208,41 @@ export class Renderer {
     if(awake) {
       if(happy){line(c,[[-13,5],[-9,2],[-5,5]],C.ink,2.4);line(c,[[5,5],[9,2],[13,5]],C.ink,2.4);}
       else{oval(c,-9,5,2.6,3.5,C.ink);oval(c,9,5,2.6,3.5,C.ink);oval(c,-9.6,3.7,.8,1,'#fff');oval(c,8.4,3.7,.8,1,'#fff');}
-      c.beginPath();c.arc(0,14,6,0,Math.PI);c.fillStyle='#aa6655';c.fill();
+      if(surprised) { oval(c,0,17,4,6,'#aa6655');line(c,[[-15,-2],[-6,-4]],'#684b3c',2);line(c,[[6,-4],[15,-2]],'#684b3c',2); }
+      else {c.beginPath();c.arc(0,14,6,0,Math.PI);c.fillStyle='#aa6655';c.fill();}
     }else{line(c,[[-14,5],[-10,7],[-5,5]],'#68513e',2);line(c,[[5,5],[10,7],[14,5]],'#68513e',2);oval(c,0,17,2.6,2,'#ba856d');}
+    if(returning){oval(c,0,17,5,7,'#b88576');line(c,[[20,34],[8,20]],'#f4c9a8',8);oval(c,7,19,6,5,'#f4c9a8');}
     if(girl){c.save();c.translate(22,-12);oval(c,-4,0,6,4,'#e2a0a0');oval(c,4,0,6,4,'#e2a0a0');oval(c,0,0,2.5,3,'#b86b76');c.restore();}
     if(happy){line(c,[[-22,35],[-43,17],[-47,2]],'#f4c9a8',10);line(c,[[22,35],[43,17],[47,2]],'#f4c9a8',10);}
-    if(child.rings===2&&!awake){line(c,[[19,29],[13,9]],'#f4c9a8',9);oval(c,12,8,6,5,'#f4c9a8');}
+    if(wakeStep===2&&!awake&&!returning){line(c,[[19,29],[13,9]],'#f4c9a8',9);oval(c,12,8,6,5,'#f4c9a8');}
     c.restore();
-    rr(c,-88,287,176,56,12,blanket);rr(c,-87,283,174,16,6,girl?'#edb1ae':'#a7c8ce');
-    for(let i=0;i<7;i++) {const sx=-70+i*23;star(c,sx,318+(i%2)*7,4,girl?'#f7cec2':'#cee2dc');}
+    rr(c,-88,287,176,56,12,blanket);rr(c,-87,283,174,16,6,mom?'#cfc4d7':girl?'#edb1ae':'#a7c8ce');
+    for(let i=0;i<7;i++) {const sx=-70+i*23;star(c,sx,318+(i%2)*7,4,mom?'#ece0ec':girl?'#f7cec2':'#cee2dc');}
     line(c,[[-77,301],[-77,331]],dark,2);line(c,[[77,301],[77,331]],dark,2);
     rr(c,-94,334,188,25,8,'#c5966e');rr(c,-94,329,188,11,5,'#e6bd92');
     rr(c,-93,344,13,35,4,'#b6845d');rr(c,80,344,13,35,4,'#b6845d');
     if(happy) {gift(c,36,284,39,girl?'#dbad58':'#cb7261',Math.sin(time*3)*.05);for(let i=0;i<5;i++){const a=time*.7+i*1.4;star(c,Math.cos(a)*66,227+Math.sin(a)*55,4,'#f7d07c');}}
-    if(!awake){
-      const z=child.rings===2?'…':'Z';
-      for(let i=0;i<(child.rings===2?1:3);i++){const rise=(time*12+i*19)%58; c.globalAlpha=1-rise/72;label(c,z,36+rise*.35,226-rise,14+i*3,'#7d9290');}c.globalAlpha=1;
+    if(!awake&&!returning){
+      const z=wakeStep===2?'…':'Z';
+      for(let i=0;i<(wakeStep===2?1:3);i++){const rise=(time*12+i*19)%58; c.globalAlpha=1-rise/72;label(c,z,36+rise*.35,226-rise,14+i*3,'#7d9290');}c.globalAlpha=1;
     }
     // The three large pips make waking progress readable without text.
     rr(c,-61,163,122,29,14,'#fff9e8e8');
     if(happy) label(c,'ありがとう！',0,178,13,C.green);
+    else if(child.state===MOM.ASKING_TIME)label(c,'いまなんじ？',0,178,14,'#786183');
+    else if(returning)label(c,'ふぁ〜…',0,178,14,'#786183');
     else if(awake)label(c,'おきたよ！',0,178,14,C.green);
-    else {for(let i=0;i<3;i++){oval(c,-28+i*28,178,8,8,i<child.rings?'#ecc164':'#e2d7bd'); if(i<child.rings)star(c,-28+i*28,178,5,'#fff5cd');}}
+    else {const total=mom?CONFIG.momRingsToWake:CONFIG.ringsToWake,gap=mom?17:28;for(let i=0;i<total;i++){const px=(i-(total-1)/2)*gap;oval(c,px,178,mom?6:8,mom?6:8,i<child.rings?'#ecc164':'#e2d7bd'); if(i<child.rings)star(c,px,178,mom?4:5,'#fff5cd');}}
+    if(mom&&reaction&&(returning||elapsed-reaction.at<2.8)){
+      rr(c,-102,111,204,36,13,'#fff9eaf5','#d8c9dc',1.5);line(c,[[21,146],[16,155],[32,147]],'#d8c9dc',1.5);label(c,reaction.text,0,129,11,'#786183');
+    }
     label(c,child.name,0,397,13,'#765e46');
     c.restore();
   }
 
   santa(c, x, y, game, time, title = false) {
-    const moving=game.santa.moving||game.introRemaining>0, clear=game.state===STATE.STAGE1_CLEAR||game.state===STATE.ALL_CLEAR;
-    const ringing=game.elapsed-game.lastBellAt<.65, phase=time*13;
+    const moving=game.santa.moving||game.introRemaining>0, clear=[STATE.STAGE1_CLEAR,STATE.STAGE2_CLEAR,STATE.ALL_CLEAR].includes(game.state);
+    const ringing=!game.momBusy&&game.elapsed-game.lastBellAt<.65, phase=time*13;
     const bob=this.reduced?0:moving?Math.sin(phase)*2.5:Math.sin(time*2)*1.4;
     oval(c,x,y+3,42,11,'#71563826');
     c.save();c.translate(x,y+bob);c.scale(game.santa.direction,1);
@@ -269,21 +283,24 @@ export class Renderer {
     if(this.backgroundStage!==stage){this.wall(this.background.getContext('2d'),stage);this.backgroundStage=stage;}
     c.drawImage(this.background,0,0);
     const t=this.reduced?0:time;
-    this.snow(c,stage===1?492:525,t);
-    const treeX=stage===1?291:524, s=stage===1?1:.82, treeY=stage===1?338:348;
+    if(game.mom?.state===MOM.ASKING_TIME&&this.momRenderState!==MOM.ASKING_TIME)this.momQuestionStart=t;
+    this.momRenderState=game.mom?.state;
+    if(game.mom?.state===MOM.SLEEPING)this.momQuestionStart=null;
+    this.snow(c,stage===1?492:stage===3?640:525,t);
+    const treeX=stage===1?291:stage===3?76:524, s=stage===1?1:stage===3?.63:.82, treeY=stage===1?338:stage===3?321:348;
     for(let i=0;i<9;i++){const a=i*2.4, r=18+(i%3)*17;const x=treeX+Math.sin(a)*r*s, y=treeY+(-174+i*17)*s; const alpha=this.reduced?.7:.45+Math.sin(t*1.5+i)*.3;c.globalAlpha=alpha;oval(c,x,y,4,4,'#fff2b6');c.globalAlpha=1;}
-    for(const child of game.children)this.bed(c,child,t,game.elapsed);
+    for(const child of game.children)this.bed(c,child,t,game.elapsed,game);
     if(marker&&time-marker.time<1.2){const age=time-marker.time;c.globalAlpha=1-age/1.2;c.beginPath();c.ellipse(marker.x,CONFIG.floorY+2,18+age*10,6+age*3,0,0,TAU);c.strokeStyle='#fff5cc';c.lineWidth=3;c.stroke();line(c,[[marker.x-5,CONFIG.floorY+1],[marker.x,CONFIG.floorY+5],[marker.x+6,CONFIG.floorY-3]],'#fff5cc',2);c.globalAlpha=1;}
     const title=game.state===STATE.TITLE;
     const sx=title?575:game.santa.x-(game.introRemaining/CONFIG.introDuration)*125;
     this.santa(c,sx,CONFIG.floorY,game,t,title);
     const bellAge=game.elapsed-game.lastBellAt;
-    if(bellAge>=0&&bellAge<.8){
+    if(!game.momBusy&&bellAge>=0&&bellAge<.8){
       for(let i=0;i<3;i++){const progress=(bellAge/.8-i*.17);if(progress<=0)continue;c.globalAlpha=Math.max(0,(1-progress)*.65);c.beginPath();c.ellipse(sx+game.santa.direction*43,CONFIG.floorY-95,25+progress*110,20+progress*65,0,0,TAU);c.strokeStyle='#fff0a0';c.lineWidth=3;c.stroke();}c.globalAlpha=1;
       for(let i=0;i<3;i++)star(c,sx+Math.cos(i*2+bellAge*2)*75,CONFIG.floorY-110+Math.sin(i*2)*35,5,'#ffdda0');
     }
     if(game.giftFlight){const f=game.giftFlight,p=f.progress, eased=1-(1-p)**2;const startX=f.fromX-(f.fromDirection??1)*32,x=startX+(f.toX-startX)*eased,y=CONFIG.floorY-57+(278-(CONFIG.floorY-57))*p-Math.sin(p*Math.PI)*90;gift(c,x,y,38,'#d87163',Math.sin(p*Math.PI*2)*.2);for(let i=0;i<4;i++)star(c,x-18-i*12,y+i*5,3,'#ffedba');}
-    if(game.state===STATE.STAGE1_CLEAR||game.state===STATE.ALL_CLEAR)this.confetti(c,t);
+    if([STATE.STAGE1_CLEAR,STATE.STAGE2_CLEAR,STATE.ALL_CLEAR].includes(game.state))this.confetti(c,t);
     if(title){const fade=c.createLinearGradient(0,0,660,0);fade.addColorStop(0,'#f9edcff5');fade.addColorStop(.56,'#f9edcfea');fade.addColorStop(1,'#f9edcf00');c.fillStyle=fade;c.fillRect(0,0,660,540);}
     // Soft vignette, like the edge of a printed storybook page.
     const shade=c.createRadialGradient(480,270,200,480,270,600);shade.addColorStop(0,'#84603900');shade.addColorStop(1,'#84603913');c.fillStyle=shade;c.fillRect(0,0,960,540);

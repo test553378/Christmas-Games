@@ -40,7 +40,7 @@
     <section class="game-shell" aria-label="サンタさんのプレゼント大作戦">
       <div class="hud">
         <div id="stage-display" class="stage-display"><span class="eyebrow">CHRISTMAS EVE</span><span class="stage-name">とくべつな よるの はじまり</span></div>
-        <div id="child-status" class="child-status" aria-label="こどもたちのようす"></div>
+        <div id="child-status" class="child-status" aria-label="みんなのようす"></div>
         <div id="timer" class="timer" hidden>
           <svg class="icon"><use href="#i-clock"/></svg>
           <div><div class="timer-number"><span id="time-label">のこり</span> <strong id="time-number">30</strong><small id="time-unit">びょう</small></div><div class="time-track" role="progressbar" aria-label="のこりじかん" aria-valuemin="0" aria-valuemax="30" aria-valuenow="30"><span id="time-fill"></span></div></div>
@@ -56,7 +56,7 @@
           <h1>サンタさんの<br><em>プレゼント大作戦</em></h1>
           <p>ちりん、ちりん。おはよう！<br>すずをならして、プレゼントをとどけよう。</p>
           <button id="start-button" class="primary start-button">あそぶ <svg class="icon"><use href="#i-arrow"/></svg></button>
-          <span class="title-note">ぜんぶで ２ステージ ・ ４〜６さいから</span>
+          <span class="title-note">ぜんぶで ３ステージ ・ ４〜６さいから</span>
         </div>
         <div id="intro" class="intro" hidden><span id="intro-text">ステージ １</span><strong>サンタさんが きたよ！</strong></div>
         <div id="result-screen" class="result-screen" hidden>
@@ -95,8 +95,19 @@
         <li><svg class="icon"><use href="#i-gift"/></svg><div><strong>プレゼントを わたそう！</strong><p>おきた こどもの そばで ボタンを おしてね。<br>みんなに わたせたら クリア！</p></div></li>
       </ol>
       <p class="help-tip">みんなが おきたら、とけいは とまるよ。</p>
+      <p class="mom-help">ステージ３の おかあさんは、すずを６かい。<br>「いまなんじ？」には じかんを えらんでね。</p>
       <p class="keyboard-note">パソコン：← → で いどう ／ スペースで すず ／ G で プレゼント</p>
       <button id="help-close" class="primary">わかった！<svg class="icon"><use href="#i-star"/></svg></button>
+    </div>
+  </dialog>
+  <dialog id="time-dialog" class="time-dialog" aria-labelledby="time-question" aria-describedby="time-instruction">
+    <div class="dialog-content time-content">
+      <span class="question-speaker">おかあさん</span>
+      <svg class="icon question-clock" aria-hidden="true"><use href="#i-clock"/></svg>
+      <h2 id="time-question">いまなんじ？</h2>
+      <p id="time-instruction">じかんを えらんで おしえてね。</p>
+      <div id="time-choices" class="time-choices" role="group" aria-label="じかんの こたえ"></div>
+      <p class="question-note">おはなしの あいだは、とけいが とまるよ。</p>
     </div>
   </dialog>
   <dialog id="pause-dialog" aria-labelledby="pause-title"><div class="dialog-content pause-content"><svg class="icon big-moon"><use href="#i-moon"/></svg><h2 id="pause-title">ちょっと ひとやすみ</h2><p>じかんは とまっているよ。</p><button id="resume-button" class="primary">つづける<svg class="icon"><use href="#i-arrow"/></svg></button><button id="pause-home" class="text-button">はじめに もどる</button></div></dialog>
