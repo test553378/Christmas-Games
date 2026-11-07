@@ -66,7 +66,7 @@ export class Game {
   giveGift() {
     const target = this.giftTarget();
     if (!target) return false;
-    this.giftFlight = { childId: target.id, fromX: this.santa.x, toX: target.x, progress: 0, startedAt: this.elapsed };
+    this.giftFlight = { childId: target.id, fromX: this.santa.x, fromDirection: this.santa.direction, toX: target.x, progress: 0, startedAt: this.elapsed };
     this.events.push({ type: 'gift', childId: target.id });
     return true;
   }

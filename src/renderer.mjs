@@ -186,7 +186,8 @@ export class Renderer {
     rr(c,-90,275,180,65,13,'#f9e6c9');rr(c,-76,244,152,41,13,'#fff5df');
     line(c,[[-63,251],[56,251]],'#e9d9bc',2);
     const breath=this.reduced?0:Math.sin(time*2)*1.4;
-    let cy=awake?231:260+breath;
+    const rise=awake?Math.min(1,Math.max(0,(elapsed-child.lastRingAt)/.45)):0;
+    let cy=awake?260-29*(1-(1-rise)**3):260+breath;
     if(happy&&!this.reduced)cy-=Math.max(0,Math.sin(time*6))*4;
     c.save();c.translate(awake?0:-13,cy);
     if(!awake&&child.rings===1)c.rotate(Math.sin(time*3)*.045-.09);
@@ -242,9 +243,11 @@ export class Renderer {
     rr(c,-33,-25,68,14,6,'#fff0d6');rr(c,-2,-66,11,46,3,'#fff0d6');
     rr(c,-32,-43,65,10,3,'#625345');rr(c,-2,-46,18,16,3,'#e6bd68');rr(c,2,-42,10,8,1,'#675444');
     // Left arm holds the sack; right arm rings or waves.
-    line(c,[[-26,-65],[-39,-43]],'#b94441',19);oval(c,-39,-40,10,10,'#f5dfbc');
+    const takingGift=game.giftFlight&&game.giftFlight.progress<.55;
+    const handY=takingGift?-58-Math.sin(game.giftFlight.progress/.55*Math.PI)*9:-40;
+    line(c,[[-26,-65],[-39,handY-3]],'#b94441',19);oval(c,-39,handY,10,10,'#f5dfbc');
     c.save();c.translate(27,-66);
-    let angle=ringing?-1+Math.sin((game.elapsed-game.lastBellAt)*29)*.35:clear||title?-.8+Math.sin(time*5)*.2:.22;
+    let angle=ringing?-1+Math.sin((game.elapsed-game.lastBellAt)*29)*.35:takingGift?-.9:clear||title?-.8+Math.sin(time*5)*.2:.22;
     c.rotate(angle);line(c,[[0,0],[7,26]],'#ce584d',18);line(c,[[3,20],[11,24]],'#fff1d7',9);oval(c,9,29,10,10,'#f3c8a6');
     bell(c,14,42,18,ringing?Math.sin(time*24)*.35:0);c.restore();
     oval(c,0,-92,30,31,'#fff3d9');oval(c,1,-98,24,25,'#f4c9a9');
@@ -279,7 +282,7 @@ export class Renderer {
       for(let i=0;i<3;i++){const progress=(bellAge/.8-i*.17);if(progress<=0)continue;c.globalAlpha=Math.max(0,(1-progress)*.65);c.beginPath();c.ellipse(sx+game.santa.direction*43,CONFIG.floorY-95,25+progress*110,20+progress*65,0,0,TAU);c.strokeStyle='#fff0a0';c.lineWidth=3;c.stroke();}c.globalAlpha=1;
       for(let i=0;i<3;i++)star(c,sx+Math.cos(i*2+bellAge*2)*75,CONFIG.floorY-110+Math.sin(i*2)*35,5,'#ffdda0');
     }
-    if(game.giftFlight){const f=game.giftFlight,p=f.progress, eased=1-(1-p)**2;const x=f.fromX+(f.toX-f.fromX)*eased,y=CONFIG.floorY-57+(278-(CONFIG.floorY-57))*p-Math.sin(p*Math.PI)*90;gift(c,x,y,38,'#d87163',Math.sin(p*Math.PI*2)*.2);for(let i=0;i<4;i++)star(c,x-18-i*12,y+i*5,3,'#ffedba');}
+    if(game.giftFlight){const f=game.giftFlight,p=f.progress, eased=1-(1-p)**2;const startX=f.fromX-(f.fromDirection??1)*32,x=startX+(f.toX-startX)*eased,y=CONFIG.floorY-57+(278-(CONFIG.floorY-57))*p-Math.sin(p*Math.PI)*90;gift(c,x,y,38,'#d87163',Math.sin(p*Math.PI*2)*.2);for(let i=0;i<4;i++)star(c,x-18-i*12,y+i*5,3,'#ffedba');}
     if(game.state===STATE.STAGE1_CLEAR||game.state===STATE.ALL_CLEAR)this.confetti(c,t);
     if(title){const fade=c.createLinearGradient(0,0,660,0);fade.addColorStop(0,'#f9edcff5');fade.addColorStop(.56,'#f9edcfea');fade.addColorStop(1,'#f9edcf00');c.fillStyle=fade;c.fillRect(0,0,660,540);}
     // Soft vignette, like the edge of a printed storybook page.
